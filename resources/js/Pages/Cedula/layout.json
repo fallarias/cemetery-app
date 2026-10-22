@@ -1,0 +1,539 @@
+{
+ "page": {
+  "w": 155,
+  "h": 110,
+  "unit": "mm"
+ },
+ "notes": [
+  "x and y are the top-left of each cell, in mm from the top-left corner of the paper. Cells are the writing areas between the printed lines.",
+  "Positions were measured on the cedula photo after straightening it (inner border 145 x 96 mm, 4.5 mm from the left and 6.2 mm from the top). Accuracy about 0.5 mm; fine-tune per printer with the Shift X / Y fields.",
+  "'printed' lists the only fields the app prints. Every other cell (date of birth, profession, taxable amounts) is left blank on purpose; add its key to 'printed' and to buildItems() in engine.js to switch it on.",
+  "Print values only. Never print labels, lines or the pre-printed serial number.",
+  "Checkbox fields: cw is the width of the empty check part on the left; the number cell is to its right. The check mark is drawn in the check part.",
+  "TIN: groups of 3, 3, 3 and 5 boxes (14 boxes), one digit per box: box width = group w / digits.",
+  "Name: first and middle start under their printed labels (first about 45 mm, middle about 74.5 mm); those two are approximate.",
+  "'rules' are the printed lines read from the photo; they are only used to draw docs/cedula-layout.svg.",
+  "Date issued: three boxes in the order month, day, year (for example 10 19 26): date_issued_mm is the first box, date_issued_dd the second, date_issued_yy the third."
+ ],
+ "fields": {
+  "year": {
+   "x": 4.6,
+   "y": 14.5,
+   "w": 13.3,
+   "h": 6.3
+  },
+  "place_of_issue": {
+   "x": 17.9,
+   "y": 14.5,
+   "w": 47.4,
+   "h": 6.3
+  },
+  "date_issued_dd": {
+   "x": 74.8,
+   "y": 14.5,
+   "w": 9.8,
+   "h": 6.3
+  },
+  "date_issued_mm": {
+   "x": 65.3,
+   "y": 14.5,
+   "w": 9.5,
+   "h": 6.3
+  },
+  "date_issued_yy": {
+   "x": 84.6,
+   "y": 14.5,
+   "w": 9.1,
+   "h": 6.3
+  },
+  "name_surname": {
+   "x": 5.4,
+   "y": 20.8,
+   "w": 38.5,
+   "h": 5.4
+  },
+  "name_first": {
+   "x": 45,
+   "y": 20.8,
+   "w": 29,
+   "h": 5.4,
+   "approx": true
+  },
+  "name_middle": {
+   "x": 74.5,
+   "y": 20.8,
+   "w": 18.5,
+   "h": 5.4,
+   "approx": true
+  },
+  "tin_group_1": {
+   "x": 94.8,
+   "y": 23.4,
+   "w": 10.7,
+   "h": 3.9,
+   "digits": 3
+  },
+  "tin_group_2": {
+   "x": 106.9,
+   "y": 23.4,
+   "w": 10.7,
+   "h": 3.9,
+   "digits": 3
+  },
+  "tin_group_3": {
+   "x": 119.0,
+   "y": 23.4,
+   "w": 10.5,
+   "h": 3.9,
+   "digits": 3
+  },
+  "tin_group_4": {
+   "x": 130.7,
+   "y": 23.4,
+   "w": 17.5,
+   "h": 3.9,
+   "digits": 5
+  },
+  "address": {
+   "x": 5.1,
+   "y": 26.2,
+   "w": 88.5,
+   "h": 5.5
+  },
+  "sex_male": {
+   "x": 109.0,
+   "y": 28.8,
+   "w": 5.2,
+   "h": 2.1,
+   "type": "checkbox",
+   "cw": 2.5
+  },
+  "sex_female": {
+   "x": 125.5,
+   "y": 28.8,
+   "w": 5.1,
+   "h": 2.1,
+   "type": "checkbox",
+   "cw": 2.5
+  },
+  "citizenship": {
+   "x": 5.2,
+   "y": 31.7,
+   "w": 29.1,
+   "h": 5.5
+  },
+  "icr_no": {
+   "x": 34.3,
+   "y": 31.7,
+   "w": 34.5,
+   "h": 5.5
+  },
+  "place_of_birth": {
+   "x": 68.8,
+   "y": 31.7,
+   "w": 54.3,
+   "h": 5.5
+  },
+  "height": {
+   "x": 123.1,
+   "y": 31.7,
+   "w": 25.9,
+   "h": 5.5
+  },
+  "civil_1_single": {
+   "x": 22.3,
+   "y": 37.8,
+   "w": 4.9,
+   "h": 2.0,
+   "type": "checkbox",
+   "cw": 2.5
+  },
+  "civil_2_married": {
+   "x": 22.3,
+   "y": 40.0,
+   "w": 4.9,
+   "h": 2.1,
+   "type": "checkbox",
+   "cw": 2.5
+  },
+  "civil_3_widow": {
+   "x": 43.1,
+   "y": 37.8,
+   "w": 4.9,
+   "h": 2.0,
+   "type": "checkbox",
+   "cw": 2.5
+  },
+  "civil_4_divorced": {
+   "x": 43.1,
+   "y": 40.0,
+   "w": 4.9,
+   "h": 2.1,
+   "type": "checkbox",
+   "cw": 2.5
+  },
+  "date_of_birth": {
+   "x": 97.4,
+   "y": 37.2,
+   "w": 25.5,
+   "h": 5.4
+  },
+  "weight": {
+   "x": 122.9,
+   "y": 37.2,
+   "w": 26.1,
+   "h": 5.4
+  },
+  "profession": {
+   "x": 4.6,
+   "y": 42.6,
+   "w": 92.6,
+   "h": 5.4
+  },
+  "basic_tax_due": {
+   "x": 122.4,
+   "y": 48.0,
+   "w": 26.6,
+   "h": 5.3
+  },
+  "additional_tax_due": {
+   "x": 122.4,
+   "y": 53.3,
+   "w": 26.6,
+   "h": 5.4
+  },
+  "item1_taxable": {
+   "x": 97.2,
+   "y": 58.7,
+   "w": 25.2,
+   "h": 5.3
+  },
+  "item1_due": {
+   "x": 122.4,
+   "y": 58.7,
+   "w": 26.6,
+   "h": 5.3
+  },
+  "item2_taxable": {
+   "x": 97.2,
+   "y": 64.0,
+   "w": 25.2,
+   "h": 5.3
+  },
+  "item2_due": {
+   "x": 122.4,
+   "y": 64.0,
+   "w": 26.6,
+   "h": 5.3
+  },
+  "item3_taxable": {
+   "x": 97.2,
+   "y": 69.3,
+   "w": 25.2,
+   "h": 5.5
+  },
+  "item3_due": {
+   "x": 122.4,
+   "y": 69.3,
+   "w": 26.6,
+   "h": 5.5
+  },
+  "total": {
+   "x": 122.8,
+   "y": 74.8,
+   "w": 25.6,
+   "h": 6.7
+  },
+  "interest": {
+   "x": 122.8,
+   "y": 81.5,
+   "w": 25.6,
+   "h": 6.5
+  },
+  "total_paid": {
+   "x": 122.8,
+   "y": 88.0,
+   "w": 25.6,
+   "h": 7.0
+  },
+  "in_words": {
+   "x": 98.0,
+   "y": 95.0,
+   "w": 50.4,
+   "h": 6.9
+  },
+  "treasurer": {
+   "x": 40,
+   "y": 92.3,
+   "w": 50,
+   "h": 6.5
+  }
+ },
+ "rules": {
+  "h": [
+   [
+    6.2,
+    4.5,
+    149
+   ],
+   [
+    14.5,
+    4.5,
+    93.7
+   ],
+   [
+    15.75,
+    93.7,
+    149
+   ],
+   [
+    16.46,
+    93.7,
+    149
+   ],
+   [
+    20.8,
+    4.5,
+    149
+   ],
+   [
+    26.2,
+    4.5,
+    93.7
+   ],
+   [
+    27.3,
+    93.7,
+    149
+   ],
+   [
+    28.1,
+    93.7,
+    149
+   ],
+   [
+    31.7,
+    4.5,
+    149
+   ],
+   [
+    37.2,
+    4.5,
+    149
+   ],
+   [
+    42.6,
+    4.5,
+    149
+   ],
+   [
+    48.0,
+    4.5,
+    149
+   ],
+   [
+    53.3,
+    4.5,
+    149
+   ],
+   [
+    58.7,
+    4.5,
+    149
+   ],
+   [
+    64.0,
+    4.5,
+    149
+   ],
+   [
+    69.3,
+    4.5,
+    149
+   ],
+   [
+    74.8,
+    4.5,
+    149
+   ],
+   [
+    81.5,
+    98.0,
+    149
+   ],
+   [
+    87.9,
+    32.2,
+    149
+   ],
+   [
+    95.0,
+    98.0,
+    149
+   ],
+   [
+    102.2,
+    4.5,
+    149
+   ],
+   [
+    98.6,
+    39.8,
+    90.0
+   ]
+  ],
+  "v": [
+   [
+    4.5,
+    6.2,
+    102.2
+   ],
+   [
+    149,
+    6.2,
+    102.2
+   ],
+   [
+    67.1,
+    6.2,
+    14.5
+   ],
+   [
+    93.7,
+    6.2,
+    31.7
+   ],
+   [
+    17.9,
+    14.5,
+    20.8
+   ],
+   [
+    65.3,
+    14.5,
+    20.8
+   ],
+   [
+    74.8,
+    14.5,
+    20.8
+   ],
+   [
+    84.6,
+    14.5,
+    20.8
+   ],
+   [
+    34.3,
+    31.7,
+    37.2
+   ],
+   [
+    68.8,
+    31.7,
+    37.2
+   ],
+   [
+    123.1,
+    31.7,
+    37.2
+   ],
+   [
+    97.4,
+    37.2,
+    42.6
+   ],
+   [
+    122.9,
+    37.2,
+    42.6
+   ],
+   [
+    97.2,
+    42.6,
+    74.8
+   ],
+   [
+    122.6,
+    42.6,
+    48.0
+   ],
+   [
+    122.4,
+    48.0,
+    74.8
+   ],
+   [
+    32.2,
+    74.8,
+    102.2
+   ],
+   [
+    98.0,
+    74.8,
+    102.2
+   ],
+   [
+    122.8,
+    74.8,
+    95.0
+   ]
+  ],
+  "shaded": [
+   [
+    97.2,
+    48.0,
+    25.2,
+    10.7
+   ]
+  ],
+  "black": [
+   [
+    67.1,
+    6.2,
+    26.6,
+    8.3
+   ]
+  ]
+ },
+ "still_needed": [
+  "ruler check: first and middle name start (45 and 74.5 mm), and the number of TIN boxes (photo shows 3+3+3+5 = 14, you counted 13)"
+ ],
+ "printed": [
+  "year",
+  "place_of_issue",
+  "date_issued_dd",
+  "date_issued_mm",
+  "date_issued_yy",
+  "name_surname",
+  "name_first",
+  "name_middle",
+  "tin_group_1",
+  "tin_group_2",
+  "tin_group_3",
+  "tin_group_4",
+  "address",
+  "sex_male",
+  "sex_female",
+  "civil_1_single",
+  "civil_2_married",
+  "civil_3_widow",
+  "civil_4_divorced",
+  "citizenship",
+  "icr_no",
+  "place_of_birth",
+  "date_of_birth",
+  "height",
+  "weight",
+  "basic_tax_due",
+  "additional_tax_due",
+  "item1_due",
+  "item2_due",
+  "item3_due",
+  "total",
+  "interest",
+  "total_paid",
+  "in_words",
+  "treasurer"
+ ]
+}
