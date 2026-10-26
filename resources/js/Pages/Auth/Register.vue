@@ -9,10 +9,18 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
+    avatar: null,
 })
 
 const showPassword = ref(false)
 const showConfirm  = ref(false)
+const avatarPreview = ref(null)
+
+const onAvatar = (e) => {
+    const file = e.target.files[0] ?? null
+    form.avatar = file
+    avatarPreview.value = file ? URL.createObjectURL(file) : null
+}
 
 const strength = computed(() => {
     const p = form.password
@@ -54,6 +62,20 @@ const submit = () => {
         </div>
 
         <form @submit.prevent="submit" novalidate>
+            <!-- Avatar -->
+            <div class="lf-group av-upload">
+                <label for="avatar" class="av-circle">
+                    <img v-if="avatarPreview" :src="avatarPreview" alt="Avatar preview" />
+                    <svg v-else viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+                        <circle cx="12" cy="13" r="3.5" />
+                    </svg>
+                </label>
+                <input id="avatar" type="file" accept="image/*" class="av-file" @change="onAvatar" />
+                <span class="av-hint">Profile photo (optional)</span>
+                <InputError class="lf-error" :message="form.errors.avatar" />
+            </div>
+
             <!-- Name -->
             <div class="lf-group">
                 <label for="name" class="lf-label">Name</label>
@@ -62,16 +84,7 @@ const submit = () => {
                         <circle cx="12" cy="8" r="4" />
                         <path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" />
                     </svg>
-                    <input
-                        id="name"
-                        type="text"
-                        class="lf-input"
-                        v-model="form.name"
-                        placeholder="Full name"
-                        required
-                        autofocus
-                        autocomplete="name"
-                    />
+                    <input id="name" type="text" class="lf-input" v-model="form.name" placeholder="Full name" required autofocus autocomplete="name" />
                 </div>
                 <InputError class="lf-error" :message="form.errors.name" />
             </div>
@@ -84,15 +97,7 @@ const submit = () => {
                         <rect x="3" y="5" width="18" height="14" rx="2" />
                         <path d="M3 7l9 6 9-6" />
                     </svg>
-                    <input
-                        id="email"
-                        type="email"
-                        class="lf-input"
-                        v-model="form.email"
-                        placeholder="you@example.com"
-                        required
-                        autocomplete="username"
-                    />
+                    <input id="email" type="email" class="lf-input" v-model="form.email" placeholder="you@example.com" required autocomplete="username" />
                 </div>
                 <InputError class="lf-error" :message="form.errors.email" />
             </div>
@@ -105,15 +110,7 @@ const submit = () => {
                         <rect x="5" y="11" width="14" height="9" rx="2" />
                         <path d="M8 11V8a4 4 0 0 1 8 0v3" />
                     </svg>
-                    <input
-                        id="password"
-                        :type="showPassword ? 'text' : 'password'"
-                        class="lf-input"
-                        v-model="form.password"
-                        placeholder="Create a password"
-                        required
-                        autocomplete="new-password"
-                    />
+                    <input id="password" :type="showPassword ? 'text' : 'password'" class="lf-input" v-model="form.password" placeholder="Create a password" required autocomplete="new-password" />
                     <button type="button" class="lf-eye" :aria-label="showPassword ? 'Hide password' : 'Show password'" @click="showPassword = !showPassword">
                         <svg v-if="!showPassword" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
@@ -144,15 +141,7 @@ const submit = () => {
                         <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" />
                         <path d="M9 12l2 2 4-4" />
                     </svg>
-                    <input
-                        id="password_confirmation"
-                        :type="showConfirm ? 'text' : 'password'"
-                        class="lf-input"
-                        v-model="form.password_confirmation"
-                        placeholder="Re-enter your password"
-                        required
-                        autocomplete="new-password"
-                    />
+                    <input id="password_confirmation" :type="showConfirm ? 'text' : 'password'" class="lf-input" v-model="form.password_confirmation" placeholder="Re-enter your password" required autocomplete="new-password" />
                     <button type="button" class="lf-eye" :aria-label="showConfirm ? 'Hide password' : 'Show password'" @click="showConfirm = !showConfirm">
                         <svg v-if="!showConfirm" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
@@ -186,17 +175,26 @@ const submit = () => {
 </template>
 
 <style scoped>
+/* ── Avatar upload ── */
+.av-upload { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.av-circle {
+    width: 84px; height: 84px; border-radius: 50%;
+    border: 2px dashed #b7d3c2; background: #f6faf7; color: #6b8f7a;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; cursor: pointer;
+    transition: border-color 0.18s, background 0.18s;
+}
+.av-circle:hover { border-color: #22a35a; background: #f0fdf4; }
+.av-circle img { width: 100%; height: 100%; object-fit: cover; }
+.av-file { display: none; }
+.av-hint { font-size: 0.78rem; color: #6b7f73; }
+
 /* ── Header ── */
 .login-header { text-align: center; margin-bottom: 1.5rem; }
 .login-icon {
-    width: 52px;
-    height: 52px;
-    margin: 0 auto 12px;
-    border-radius: 18px;
+    width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 18px;
     background: linear-gradient(135deg, #14532d, #22a35a);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     box-shadow: 0 6px 18px rgba(20, 83, 45, 0.35);
 }
 .login-title { font-size: 1.5rem; font-weight: 600; color: #0d2117; line-height: 1.2; }
@@ -204,59 +202,23 @@ const submit = () => {
 
 /* ── Fields ── */
 .lf-group { margin-bottom: 1rem; }
-.lf-label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #374151;
-    letter-spacing: 0.02em;
-}
+.lf-label { display: block; margin-bottom: 6px; font-size: 0.8rem; font-weight: 600; color: #374151; letter-spacing: 0.02em; }
 .lf-shell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 12px;
-    height: 46px;
-    background: #f6faf7;
-    border: 1.5px solid #d3e3d9;
-    border-radius: 14px;
+    display: flex; align-items: center; gap: 10px; padding: 0 12px; height: 46px;
+    background: #f6faf7; border: 1.5px solid #d3e3d9; border-radius: 14px;
     transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
-.lf-shell:focus-within {
-    background: #ffffff;
-    border-color: #22a35a;
-    box-shadow: 0 0 0 3px rgba(34, 163, 90, 0.15);
-}
+.lf-shell:focus-within { background: #fff; border-color: #22a35a; box-shadow: 0 0 0 3px rgba(34, 163, 90, 0.15); }
 .lf-shell--error { border-color: #dc2626; background: #fef8f8; }
-.lf-shell--error:focus-within {
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
-}
+.lf-shell--error:focus-within { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12); }
 .lf-icon { color: #6b8f7a; flex-shrink: 0; }
 .lf-input {
-    flex: 1;
-    min-width: 0;
-    height: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    box-shadow: none;
-    padding: 0;
-    font-size: 0.95rem;
-    color: #111827;
+    flex: 1; min-width: 0; height: 100%; background: transparent; border: none;
+    outline: none; box-shadow: none; padding: 0; font-size: 0.95rem; color: #111827;
 }
 .lf-input:focus { box-shadow: none; outline: none; }
 .lf-input::placeholder { color: #9ca3af; }
-.lf-eye {
-    background: none;
-    border: none;
-    padding: 4px;
-    color: #6b8f7a;
-    cursor: pointer;
-    display: flex;
-    border-radius: 8px;
-}
+.lf-eye { background: none; border: none; padding: 4px; color: #6b8f7a; cursor: pointer; display: flex; border-radius: 8px; }
 .lf-eye:hover { color: #14532d; background: rgba(34, 163, 90, 0.1); }
 .lf-error { margin-top: 6px; }
 
@@ -280,37 +242,19 @@ const submit = () => {
 
 /* ── Submit ── */
 .lf-submit {
-    width: 100%;
-    height: 46px;
-    margin-top: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border: none;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #14532d, #1f8a4c);
-    color: #ffffff;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    cursor: pointer;
+    width: 100%; height: 46px; margin-top: 0.5rem;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: 14px; background: linear-gradient(135deg, #14532d, #1f8a4c);
+    color: #fff; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.02em; cursor: pointer;
     box-shadow: 0 6px 16px rgba(20, 83, 45, 0.35);
     transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
 }
-.lf-submit:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 9px 22px rgba(20, 83, 45, 0.42);
-}
+.lf-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(20, 83, 45, 0.42); }
 .lf-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .lf-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: lf-spin 0.7s linear infinite;
+    width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff; border-radius: 50%; animation: lf-spin 0.7s linear infinite;
 }
 @keyframes lf-spin { to { transform: rotate(360deg); } }
 

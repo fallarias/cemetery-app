@@ -145,9 +145,9 @@ class ImportDeceasedExport extends Command
             if ($dry) continue;
 
             $base  = Str::slug($name, '.') ?: 'user';
-            $email = "$base@cemetery.local";
+            $email = "$base@gmail.com";
             for ($n = 2; User::where('email', $email)->exists(); $n++) {
-                $email = "$base$n@cemetery.local";
+                $email = "$base$n@gmail.com";
             }
 
             User::forceCreate([

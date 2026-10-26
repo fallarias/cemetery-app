@@ -36,20 +36,22 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'avatar'   => ['nullable', 'image', 'max:2048'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'avatar'   => $request->file('avatar')?->store('avatars', 'public'),
         ]);
 
         $user->markEmailAsVerified();
 
         event(new Registered($user));
 
-        Auth::login($user);
+        //Auth::login($user);
 
-        return redirect(route('employee.display_employee', absolute: false));
+        return redirect()->route('login')->with('status', 'Account created. Please wait for admin approval.');
     }
 }

@@ -5,13 +5,23 @@ import InputError from '@/Components/InputError.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 
 defineProps({
-    canResetPassword: {
-        type: Boolean,
-    },
-    status: {
-        type: String,
-    },
+    canResetPassword: { type: Boolean },
+    status: { type: String },
+    users: { type: Array, default: () => [] },
 })
+
+// 'pick' = click an avatar, 'password' = email + password
+const mode = ref('pick')
+
+const quickForm = useForm({ user_id: null })
+
+const pick = (user) => {
+    quickForm.user_id = user.id
+    quickForm.post(route('quick.login'))
+}
+
+const initials = (name) =>
+    name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
 
 const form = useForm({
     email: '',
@@ -39,14 +49,46 @@ const submit = () => {
                 </svg>
             </div>
             <h1 class="login-title">Welcome back</h1>
-            <p class="login-sub">Sign in to manage cemetery records</p>
+            <p class="login-sub">
+                {{ mode === 'pick' ? 'Click your account to sign in' : 'Sign in to manage cemetery records' }}
+            </p>
         </div>
 
         <div v-if="status" class="login-status">
             {{ status }}
         </div>
 
-        <form @submit.prevent="submit" novalidate>
+        <!-- ═════════ AVATAR PICKER ═════════ -->
+        <div v-if="mode === 'pick'">
+            <p v-if="!users.length" class="av-empty">No accounts available yet.</p>
+
+            <div class="av-grid">
+                <button
+                    v-for="u in users"
+                    :key="u.id"
+                    type="button"
+                    class="av-item"
+                    :disabled="quickForm.processing"
+                    @click="pick(u)"
+                >
+                    <img v-if="u.avatar_url" :src="u.avatar_url" class="av-img" :alt="u.name" />
+                    <div v-else class="av-img av-initials">{{ initials(u.name) }}</div>
+                    <span class="av-name">{{ u.name }}</span>
+                </button>
+            </div>
+            <InputError class="lf-error" :message="quickForm.errors.user_id" />
+
+            <button type="button" class="lf-switch" @click="mode = 'password'">
+                Use email &amp; password instead
+            </button>
+
+            <Link :href="route('register')">
+                <span class="lf-register">Register</span>
+            </Link>
+        </div>
+
+        <!-- ═════════ EMAIL + PASSWORD ═════════ -->
+        <form v-else @submit.prevent="submit" novalidate>
             <!-- Email -->
             <div class="lf-group">
                 <label for="email" class="lf-label">Email</label>
@@ -113,11 +155,7 @@ const submit = () => {
                     <span>Remember me</span>
                 </label>
 
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="lf-link"
-                >
+                <Link v-if="canResetPassword" :href="route('password.request')" class="lf-link">
                     Forgot password?
                 </Link>
             </div>
@@ -128,203 +166,147 @@ const submit = () => {
                 {{ form.processing ? 'Signing in…' : 'Log in' }}
             </button>
 
-            <Link :href="route('register')">
-                <span class="lf-register">Register</span>
-            </Link>
+            <button type="button" class="lf-switch" @click="mode = 'pick'">
+                ← Back to account picker
+            </button>
         </form>
     </GuestLayout>
 </template>
 
 <style scoped>
-/* ── Header ── */
-.login-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
+/* ── Avatar picker (new) ── */
+.av-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 4px;
 }
-.login-icon {
-    width: 52px;
-    height: 52px;
-    margin: 0 auto 12px;
-    border-radius: 18px;
-    background: linear-gradient(135deg, #14532d, #22a35a);
+.av-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 92px;
+    padding: 10px 6px;
+    background: transparent;
+    border: 1.5px solid transparent;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.av-item:hover:not(:disabled) { background: #f0fdf4; border-color: #22a35a; transform: translateY(-2px); }
+.av-item:disabled { opacity: 0.6; cursor: not-allowed; }
+.av-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.av-initials {
     display: flex;
     align-items: center;
     justify-content: center;
+    background: linear-gradient(135deg, #14532d, #22a35a);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+.av-name {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #374151;
+    text-align: center;
+    line-height: 1.2;
+    word-break: break-word;
+}
+.av-empty { text-align: center; color: #6b7f73; font-size: 0.9rem; margin-bottom: 1rem; }
+
+.lf-switch {
+    display: block;
+    margin: 1.25rem auto 0.75rem;
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #15803d;
+    cursor: pointer;
+}
+.lf-switch:hover { text-decoration: underline; color: #14532d; }
+
+/* ── Header ── */
+.login-header { text-align: center; margin-bottom: 1.5rem; }
+.login-icon {
+    width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 18px;
+    background: linear-gradient(135deg, #14532d, #22a35a);
+    display: flex; align-items: center; justify-content: center;
     box-shadow: 0 6px 18px rgba(20, 83, 45, 0.35);
 }
-.login-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #0d2117;
-    line-height: 1.2;
-}
-.login-sub {
-    margin-top: 4px;
-    font-size: 0.9rem;
-    color: #6b7f73;
-}
+.login-title { font-size: 1.5rem; font-weight: 600; color: #0d2117; line-height: 1.2; }
+.login-sub { margin-top: 4px; font-size: 0.9rem; color: #6b7f73; }
 
 .login-status {
-    margin-bottom: 1rem;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    color: #166534;
-    font-size: 0.875rem;
-    font-weight: 500;
+    margin-bottom: 1rem; padding: 10px 12px; border-radius: 12px;
+    background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534;
+    font-size: 0.875rem; font-weight: 500;
 }
 
 /* ── Fields ── */
 .lf-group { margin-bottom: 1rem; }
-.lf-label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #374151;
-    letter-spacing: 0.02em;
-}
+.lf-label { display: block; margin-bottom: 6px; font-size: 0.8rem; font-weight: 600; color: #374151; letter-spacing: 0.02em; }
 .lf-shell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 12px;
-    height: 46px;
-    background: #f6faf7;
-    border: 1.5px solid #d3e3d9;
-    border-radius: 14px;
+    display: flex; align-items: center; gap: 10px; padding: 0 12px; height: 46px;
+    background: #f6faf7; border: 1.5px solid #d3e3d9; border-radius: 14px;
     transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
-.lf-shell:focus-within {
-    background: #ffffff;
-    border-color: #22a35a;
-    box-shadow: 0 0 0 3px rgba(34, 163, 90, 0.15);
-}
-.lf-shell--error {
-    border-color: #dc2626;
-    background: #fef8f8;
-}
-.lf-shell--error:focus-within {
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
-}
+.lf-shell:focus-within { background: #fff; border-color: #22a35a; box-shadow: 0 0 0 3px rgba(34, 163, 90, 0.15); }
+.lf-shell--error { border-color: #dc2626; background: #fef8f8; }
+.lf-shell--error:focus-within { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12); }
 .lf-icon { color: #6b8f7a; flex-shrink: 0; }
 .lf-input {
-    flex: 1;
-    min-width: 0;
-    height: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    box-shadow: none;
-    padding: 0;
-    font-size: 0.95rem;
-    color: #111827;
+    flex: 1; min-width: 0; height: 100%; background: transparent; border: none;
+    outline: none; box-shadow: none; padding: 0; font-size: 0.95rem; color: #111827;
 }
 .lf-input:focus { box-shadow: none; outline: none; }
 .lf-input::placeholder { color: #9ca3af; }
-.lf-eye {
-    background: none;
-    border: none;
-    padding: 4px;
-    color: #6b8f7a;
-    cursor: pointer;
-    display: flex;
-    border-radius: 8px;
-}
+.lf-eye { background: none; border: none; padding: 4px; color: #6b8f7a; cursor: pointer; display: flex; border-radius: 8px; }
 .lf-eye:hover { color: #14532d; background: rgba(34, 163, 90, 0.1); }
 .lf-error { margin-top: 6px; }
 
 /* ── Remember / forgot ── */
-.lf-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 0.25rem 0 1.25rem;
-}
-.lf-check {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #4b5563;
-    cursor: pointer;
-}
-.lf-check input {
-    width: 16px;
-    height: 16px;
-    accent-color: #16a34a;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.lf-link {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #15803d;
-    text-decoration: none;
-}
+.lf-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0.25rem 0 1.25rem; }
+.lf-check { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #4b5563; cursor: pointer; }
+.lf-check input { width: 16px; height: 16px; accent-color: #16a34a; border-radius: 4px; cursor: pointer; }
+.lf-link { font-size: 0.85rem; font-weight: 500; color: #15803d; text-decoration: none; }
 .lf-link:hover { text-decoration: underline; color: #14532d; }
 
 /* ── Submit ── */
 .lf-submit {
-    width: 100%;
-    height: 46px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border: none;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #14532d, #1f8a4c);
-    color: #ffffff;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    cursor: pointer;
+    width: 100%; height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: 14px; background: linear-gradient(135deg, #14532d, #1f8a4c);
+    color: #fff; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.02em; cursor: pointer;
     box-shadow: 0 6px 16px rgba(20, 83, 45, 0.35);
     transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
 }
-.lf-submit:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 9px 22px rgba(20, 83, 45, 0.42);
-}
+.lf-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(20, 83, 45, 0.42); }
 .lf-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .lf-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: lf-spin 0.7s linear infinite;
+    width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff; border-radius: 50%; animation: lf-spin 0.7s linear infinite;
 }
 @keyframes lf-spin { to { transform: rotate(360deg); } }
 
 /* ── Register ── */
 .lf-register {
-    width: 100%;
-    height: 46px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 5px;
-    gap: 8px;
-    border: none;
-    border-radius: 14px;
+    width: 100%; height: 46px; display: flex; align-items: center; justify-content: center;
+    margin-top: 5px; gap: 8px; border: none; border-radius: 14px;
     background: linear-gradient(135deg, #151e18, #92d2ad);
-    color: #ffffff;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    cursor: pointer;
+    color: #fff; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.02em; cursor: pointer;
     box-shadow: 0 6px 16px rgba(20, 83, 45, 0.35);
     transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
 }
-.lf-register:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 9px 22px rgba(20, 83, 45, 0.42);
-}
-.lf-register:disabled { opacity: 0.6; cursor: not-allowed; }
+.lf-register:hover { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(20, 83, 45, 0.42); }
 </style>
