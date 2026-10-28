@@ -17,12 +17,6 @@ Route::get('/', function () {
         : redirect()->route('login');
 });
 
-Route::get('/whoami', fn () => response()->json([
-    'ip'            => request()->ip(),
-    'remote_addr'   => $_SERVER['REMOTE_ADDR'] ?? null,
-    'forwarded_for' => request()->header('X-Forwarded-For'),
-]));
-
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

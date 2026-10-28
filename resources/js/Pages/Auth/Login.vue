@@ -11,7 +11,7 @@ defineProps({
 })
 
 // 'pick' = click an avatar, 'password' = email + password
-const mode = ref('pick')
+const mode = ref('password')
 
 const quickForm = useForm({ user_id: null })
 
@@ -79,7 +79,7 @@ const submit = () => {
             <InputError class="lf-error" :message="quickForm.errors.user_id" />
 
             <button type="button" class="lf-switch" @click="mode = 'password'">
-                Use email &amp; password instead
+                ← Back to email &amp; password instead
             </button>
 
             <Link :href="route('register')">
@@ -167,7 +167,7 @@ const submit = () => {
             </button>
 
             <button type="button" class="lf-switch" @click="mode = 'pick'">
-                ← Back to account picker
+                Use account picker instead
             </button>
         </form>
     </GuestLayout>

@@ -25,6 +25,7 @@ class AuthenticatedSessionController extends Controller
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
             'users' => User::where('account_status', 'active')
+                ->where('account_type', 'Employee')
                 ->orderBy('name')
                 ->get()
                 ->map(fn ($u) => [
