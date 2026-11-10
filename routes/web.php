@@ -13,7 +13,7 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     return Auth::check()
-        ? redirect()->route('dashboard')
+        ? redirect()->route('employee.display_employee')
         : redirect()->route('login');
 });
 
