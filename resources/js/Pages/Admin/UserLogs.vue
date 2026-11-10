@@ -99,7 +99,12 @@ const typeLabel = (t) => (t === 'created' ? 'Created' : t === 'updated' ? 'Edite
                 </template>
 
                 <template v-slot:item.message="{ item }">
-                    <span class="vr-msg-text">{{ item.message }}</span>
+                    <div class="vr-msg-list">
+                        <div v-for="(line, i) in item.message.split('; ')" :key="i"
+                            class="vr-msg-text" :class="{ 'vr-msg-changed': line.includes(' → ') }">
+                            {{ line }}
+                        </div>
+                    </div>
                 </template>
 
                 <template v-slot:item.user_name="{ item }">
@@ -187,6 +192,9 @@ const typeLabel = (t) => (t === 'created' ? 'Created' : t === 'updated' ? 'Edite
 
 .vr-badge--new     { background: #eaf5ee; color: #065f46; border-color: #a7f3d0; }
 .vr-badge--updated { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+
+.vr-msg-list { display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
+.vr-msg-changed { font-weight: 700; color: #b45309; }
 
 /* ─── Action badges ─── */
 .vr-badge {

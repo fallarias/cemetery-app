@@ -2,16 +2,15 @@
 namespace App\Models\Concerns;
 
 use App\Models\RecordLogs;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-
 
 /**
  * @method static void created(\Closure|string $callback)
  * @method static void updated(\Closure|string $callback)
  */
-
 trait LogsRecordChanges
 {
     public static function bootLogsRecordChanges(): void
@@ -21,9 +20,7 @@ trait LogsRecordChanges
                 return; // skips Artisan imports (user_id is required)
             }
 
-            $name = trim("{$record->surname}, {$record->givenname}");
-
-            static::writeRecordLog($record, 'New Record', "New record created: {$name} (OR# {$record->or_number})");
+            static::writeRecordLog($record, 'New Record', static::buildRecordLogMessage($record));
         });
 
         static::updated(function ($record) {
@@ -31,21 +28,14 @@ trait LogsRecordChanges
                 return;
             }
 
-            $parts = [];
+            // only the tracked fields that really changed (ignores updated_at, deleted_at, user_id, etc.)
+            $changes = Arr::only($record->getChanges(), array_keys(static::$recordLogLabels));
 
-            foreach ($record->getChanges() as $field => $new) {
-                if (! isset(static::$recordLogLabels[$field])) {
-                    continue; // ignores updated_at, deleted_at, user_id, etc.
-                }
-
-                $old = $record->getOriginal($field);
-                $parts[] = static::$recordLogLabels[$field] . ': '
-                    . static::displayRecordLogValue($field, $old) . ' → ' . static::displayRecordLogValue($field, $new);
+            if (empty($changes)) {
+                return;
             }
 
-            if ($parts) {
-                static::writeRecordLog($record, 'Updated', implode('; ', $parts));
-            }
+            static::writeRecordLog($record, 'Updated', static::buildRecordLogMessage($record, $changes));
         });
     }
 
@@ -72,10 +62,41 @@ trait LogsRecordChanges
         'location_id' => ['locations', 'location'],
     ];
 
+    /**
+     * One "Label: value" line per field that has a value.
+     * Changed fields are shown as "Label: old → new".
+     */
+    protected static function buildRecordLogMessage($record, array $changes = []): string
+    {
+        $lines = [];
+
+        foreach (static::$recordLogLabels as $field => $label) {
+            if (array_key_exists($field, $changes)) {
+                $lines[] = "{$label}: "
+                    . static::displayRecordLogValue($field, $record->getOriginal($field))
+                    . ' → '
+                    . static::displayRecordLogValue($field, $changes[$field]);
+                continue;
+            }
+
+            $current = $record->getAttribute($field);
+
+            if ($current !== null && $current !== '') {
+                $lines[] = "{$label}: " . static::displayRecordLogValue($field, $current);
+            }
+        }
+
+        return implode('; ', $lines);
+    }
+
     protected static function displayRecordLogValue(string $field, $value): string
     {
         if ($value === null || $value === '') {
             return '—';
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            $value = $value->format('Y-m-d');
         }
 
         if (isset(static::$recordLogLookups[$field])) {
@@ -83,14 +104,14 @@ trait LogsRecordChanges
             $value = DB::table($table)->where('id', $value)->value($column) ?? $value;
         }
 
-        return Str::limit((string) $value, 40);
+        return Str::limit((string) $value, 120);
     }
 
     protected static function writeRecordLog($record, string $type, string $message): void
     {
         try {
             RecordLogs::create([
-                'message'    => Str::limit($message, 255),
+                'message'    => $message,
                 'type'       => $type,
                 'user_id'    => Auth::id(),
                 'desease_id' => $record->id,
