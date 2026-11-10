@@ -46,6 +46,7 @@ Route::middleware(['auth', LogActivity::class])->group(function () {
     // ── Admin ────────────────────────────────────────────────
     Route::controller(AdminPageController::class)->group(function () {
         Route::get('/user/accounts', 'user_page')->name('admin.display_accounts');
+        Route::get('/employee/logs', 'user_logs')->name('admin.display_logs');
     });
 
     Route::controller(AccountController::class)->group(function () {

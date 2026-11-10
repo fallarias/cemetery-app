@@ -192,6 +192,9 @@
                 <NavLink v-if="isAdmin" :href="route('admin.display_accounts')" :active="route().current('admin.display_accounts')" icon="mdi-account-group">
                     <v-list-item-title class="nav-item-title">Accounts</v-list-item-title>
                 </NavLink>
+                <NavLink v-if="isAdmin" :href="route('admin.display_logs')" :active="route().current('admin.display_logs')" icon="mdi-text-box-multiple">
+                    <v-list-item-title class="nav-item-title">Logs</v-list-item-title>
+                </NavLink>
                 <NavLink :href="route('display.cedula')" :active="route().current('display.cedula')" icon="mdi-list-box-outline">
                     <v-list-item-title class="nav-item-title">Cedula</v-list-item-title>
                 </NavLink>

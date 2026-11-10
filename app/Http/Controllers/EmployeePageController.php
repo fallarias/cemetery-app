@@ -55,29 +55,29 @@ class EmployeePageController extends Controller
         $up = fn ($v) => $v === null ? null : mb_strtoupper(trim($v));
 
         $records = $paginated->setCollection(
-        $paginated->getCollection()->map(fn ($item) => [
-            'id'              => $item->id,
-            'surname'         => $up($item->surname),
-            'givenname'       => $up($item->givenname),
-            'middlename'      => $up($item->middlename),
-            'suffix'          => $up($item->suffix),
-            'deseased_name'   => $up(trim("{$item->surname}, {$item->givenname} {$item->middlename} {$item->suffix}")),
-            'date_of_death'   => $item->date_of_death,
-            'or_number'       => $item->or_number,
-            'name_of_payor'   => $up($item->name_of_payor),
-            'date_of_payment' => $item->date_of_payment,
-            'status'          => $up($item->status->status),
-            'status_id'       => $item->status_id,
-            'rental_type'     => $up($item->rental->rental_type),
-            'rental_id'       => $item->rental_id,
-            'location'        => $up($item->location?->location),
-            'location_id'     => $item->location_id,
-            'year_covered'    => $item->year_covered,
-            'amount_due'      => $item->amount_due,
-            'encoded_by'      => $up($item->user?->name),
-            'remarks'         => $up($item->remarks->last()?->remarks),
-        ])
-    );
+            $paginated->getCollection()->map(fn ($item) => [
+                'id'              => $item->id,
+                'surname'         => $up($item->surname),
+                'givenname'       => $up($item->givenname),
+                'middlename'      => $up($item->middlename),
+                'suffix'          => $up($item->suffix),
+                'deseased_name'   => $up(trim("{$item->surname}, {$item->givenname} {$item->middlename} {$item->suffix}")),
+                'date_of_death'   => $item->date_of_death,
+                'or_number'       => $item->or_number,
+                'name_of_payor'   => $up($item->name_of_payor),
+                'date_of_payment' => $item->date_of_payment,
+                'status'          => $up($item->status->status),
+                'status_id'       => $item->status_id,
+                'rental_type'     => $up($item->rental->rental_type),
+                'rental_id'       => $item->rental_id,
+                'location'        => $up($item->location?->location),
+                'location_id'     => $item->location_id,
+                'year_covered'    => $item->year_covered,
+                'amount_due'      => $item->amount_due,
+                'encoded_by'      => $up($item->user?->name),
+                'remarks'         => $up($item->remarks->last()?->remarks),
+            ])
+        );
 
         $location = Location::select('id','location')->get();
         $status = Status::select('id','status')->get();

@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\LogsChanges;
+use App\Models\Concerns\LogsRecordChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Deseased extends Model
 {
-    use HasFactory, SoftDeletes, LogsChanges;
+    use HasFactory, SoftDeletes, LogsChanges, LogsRecordChanges;
 
     protected $fillable = [
         'surname',

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\{Deseased, Rental, Status, Location, Remarks, Logs, User};
+use App\Models\{Deseased, Rental, Status, Location, Remarks, Logs, User, RecordLogs};
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -95,6 +95,26 @@ class ImportDeceasedExport extends Command
                     $rec->updated_at = $created;
                     $rec->save();
 
+                    // ── record_logs (shown on the Logs page) ──────────────────────
+                    $this->addRecordLog(
+                        $rec->id, $userId, 'New Record',
+                        "New record created: {$surname}, {$given} (OR# {$orNo})",
+                        $created
+                    );
+
+                    if (!blank($modBy)) {
+                        $modLogId   = $this->userId($modBy) ?? $userId;
+                        $modLogDate = $this->date($modAt, true) ?? $created;
+
+                        $this->addRecordLog(
+                            $rec->id, $modLogId, 'Updated',
+                            trim((string) $remarks) !== ''
+                                ? 'Record updated: ' . trim((string) $remarks)
+                                : 'Record updated',
+                            $modLogDate
+                        );
+                    }
+
                     $type    = $type ? strtoupper(trim($type)) : 'NEW RECORD';
                     $remarks = $remarks ? trim($remarks) : null;
 
@@ -178,6 +198,19 @@ class ImportDeceasedExport extends Command
             'remarks_id' => $rem->id,
         ]);
         $log->forceFill(['created_at' => $at, 'updated_at' => $at])->save();
+    }
+
+    private function addRecordLog(int $recId, int $userId, string $type, string $message, Carbon $at): void
+    {
+        $log = new RecordLogs([
+            'message'    => Str::limit($message, 255),
+            'type'       => $type,
+            'user_id'    => $userId,
+            'desease_id' => $recId,
+        ]);
+        $log->created_at = $at;
+        $log->updated_at = $at;
+        $log->save();
     }
 
     private function date($v, bool $withTime = false): Carbon|string|null

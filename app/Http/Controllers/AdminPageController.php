@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Location;
+use App\Models\RecordLogs;
 use App\Models\Rental;
 use App\Models\Status;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class AdminPageController extends Controller
 {
-    public function user_page(Request $request){
+    public function user_page(Request $request) {
 
         $user = Auth::user();
 
@@ -43,6 +45,50 @@ class AdminPageController extends Controller
             'rental' => $rental,
             'location' => $location,
             'records' => $records,
+        ]);
+    }
+
+    public function user_logs(Request $request)
+    {
+        $search  = trim((string) $request->input('search', ''));
+        $perPage = (int) $request->input('per_page', 25);
+
+        $logs = RecordLogs::query()
+            ->join('users', 'users.id', '=', 'record_logs.user_id')
+            ->join('deseased_info', 'deseased_info.id', '=', 'record_logs.desease_id')
+            ->select(
+                'record_logs.id',
+                'record_logs.message',
+                'record_logs.type',
+                'record_logs.created_at',
+                'users.name as user_name',
+                DB::raw("CONCAT(deseased_info.surname, ', ', deseased_info.givenname) as deseased_name")
+            )
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($q) use ($search) {
+                    $q->where('record_logs.message', 'like', "%{$search}%")
+                      ->orWhere('record_logs.type', 'like', "%{$search}%")
+                      ->orWhere('users.name', 'like', "%{$search}%")
+                      ->orWhere('deseased_info.surname', 'like', "%{$search}%")
+                      ->orWhere('deseased_info.givenname', 'like', "%{$search}%");
+                });
+            })
+            ->orderByDesc('record_logs.created_at')
+            ->orderByDesc('record_logs.id')
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn ($log) => [
+                'id'            => $log->id,
+                'type'          => $log->type,
+                'message'       => $log->message,
+                'deseased_name' => $log->deseased_name,
+                'user_name'     => $log->user_name,
+                'created_at'    => $log->created_at->format('M d, Y h:i A'),
+            ]);
+
+        return Inertia::render('Admin/UserLogs', [
+            'logs'    => $logs,
+            'filters' => ['search' => $search],
         ]);
     }
 }
